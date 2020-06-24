@@ -1,0 +1,419 @@
+<div class="row">
+  <div class="col-xl-6">
+
+    <kt-portlet>
+      <kt-portlet-header [title]="'Busca Empleados'">
+      </kt-portlet-header>
+      <kt-portlet-body class="form">
+        <form class="example-form"
+              [formGroup]="searchEmployeesForm">
+          <table class="example-full-width" cellspacing="0">
+            <tr>
+              <td>
+                <mat-form-field class="example-full-width">
+                  <input type="text"
+                         matInput
+                         formControlName="codeEmployee"
+                         placeholder="Código de Empleado"
+                         value=""
+                         maxlength="10">
+                  <mat-hint align="start">Código identificador de empleado.</mat-hint>
+                </mat-form-field>
+              </td>
+              <td>
+                <mat-form-field class="example-full-width">
+                  <input type="text"
+                         matInput
+                         formControlName="fistName"
+                         placeholder="Primer Nombre"
+                         value=""
+                         maxlength="25">
+                  <mat-hint align="start">Primer nombre de empleado.</mat-hint>
+                </mat-form-field>
+              </td>
+            </tr>
+          </table>
+        </form>
+      </kt-portlet-body>
+      <kt-portlet-footer style="text-align:right">
+        <button class="btn btn-primary"
+                (click)="searchEmployees()">
+          Buscar
+        </button>
+      </kt-portlet-footer>
+    </kt-portlet>
+
+    <br />
+
+    <kt-portlet>
+      <kt-portlet-header [title]="'Empleados'">
+      </kt-portlet-header>
+      <kt-portlet-body class="form">
+        <mat-table table
+                   [dataSource]="dataEmployeesSource"
+                   matSort>
+          <!-- employeeId Column -->
+          <ng-container matColumnDef="employeeId">
+            <mat-header-cell *matHeaderCellDef> Id. </mat-header-cell>
+            <mat-cell *matCellDef="let element"> {{element.employeeId}} </mat-cell>
+          </ng-container>
+          <!-- name Column -->
+          <ng-container matColumnDef="firstName">
+            <mat-header-cell *matHeaderCellDef
+                             mat-sort-header> Primer Nombre. </mat-header-cell>
+            <mat-cell *matCellDef="let element"> {{element.firstName}} </mat-cell>
+          </ng-container>
+          <!-- secondName Column -->
+          <ng-container matColumnDef="secondName">
+            <mat-header-cell *matHeaderCellDef> Segundo Nombre. </mat-header-cell>
+            <mat-cell *matCellDef="let element"> {{element.secondName}} </mat-cell>
+          </ng-container>
+          <!-- lastName Column -->
+          <ng-container matColumnDef="lastName">
+            <mat-header-cell *matHeaderCellDef> Apellido Paterno. </mat-header-cell>
+            <mat-cell *matCellDef="let element"> {{element.lastName}} </mat-cell>
+          </ng-container>
+          <!-- sureName Column -->
+          <ng-container matColumnDef="sureName">
+            <mat-header-cell *matHeaderCellDef> Apellido Materno. </mat-header-cell>
+            <mat-cell *matCellDef="let element"> {{element.sureName}} </mat-cell>
+          </ng-container>
+          <mat-header-row *matHeaderRowDef="displayedEmployeesColumns"></mat-header-row>
+          <mat-row *matRowDef="let row; columns: displayedEmployeesColumns;"
+                   [ngClass]="{'highlight': selectedEmployeeRowIndex == row.employeeId}"
+                   (click)="highlight(row)"
+                   (dblclick)="getEmployeeById(row.employeeId)">
+          </mat-row>
+        </mat-table>
+        <mat-paginator #paginator
+                       [pageSizeOptions]="[5, 10]"
+                       showFirstLastButtons>
+        </mat-paginator>
+      </kt-portlet-body>
+      <!--<kt-portlet-footer style="text-align:right">
+        <button class="btn btn-primary"> Buscar</button>
+      </kt-portlet-footer>-->
+    </kt-portlet>
+
+  </div>
+
+  <div class="col-xl-6">
+    <kt-portlet>
+      <kt-portlet-header [title]="'Administra Empleado'">
+      </kt-portlet-header>
+      <kt-portlet-body class="form">
+        <form class="example-container"
+              [formGroup]="adminEmployeeForm">
+
+          <table class="example-full-width" cellspacing="0">
+            <tr>
+              <td>
+                &nbsp;
+              </td>
+              <td>
+                <mat-form-field class="example-full-width">
+                  <input matInput
+                         formControlName="employeeId"
+                         placeholder="Identificador de Empleado"
+                         value="">
+                </mat-form-field>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <mat-form-field class="example-full-width">
+                  <input matInput
+                         formControlName="codeEmployee"
+                         placeholder="Código de Empleado"
+                         value=""
+                         maxlength="11">
+                  <mat-hint align="start">Indica el código o Nº de Empleado.</mat-hint>
+                  <mat-error *ngIf="isControlHasError('codeEmployee', 'required')">
+                    <strong>* requerido</strong>
+                  </mat-error>
+                  <mat-error *ngIf="isControlHasError('codeEmployee', 'minlength')">
+                    <strong>* longitud minima 3</strong>
+                  </mat-error>
+                  <mat-error *ngIf="isControlHasError('codeEmployee', 'maxlength')">
+                    <strong>* longitud minima 25</strong>
+                  </mat-error>
+                </mat-form-field>
+              </td>
+              <td>
+                <mat-form-field class="example-full-width">
+                  <mat-label>- Selecciona -</mat-label>
+                  <mat-select formControlName="roleId">
+                    <mat-option *ngFor="let role of listRoles"
+                                [value]="role.roleId">
+                      {{role.name}}
+                    </mat-option>
+                  </mat-select>
+                  <mat-hint align="start">Selecciona un Role</mat-hint>
+                  <mat-error *ngIf="isControlHasError('roleId','required')">
+                    <strong>* requerido</strong>
+                  </mat-error>
+                </mat-form-field>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <mat-form-field class="example-full-width">
+                  <input matInput
+                         formControlName="fistName"
+                         placeholder="Primer Nombre"
+                         value=""
+                         maxlength="11">
+                  <mat-hint align="start">Primer Nombre de Empelado.</mat-hint>
+                  <mat-error *ngIf="isControlHasError('fistName', 'required')">
+                    <strong>* requerido</strong>
+                  </mat-error>
+                  <mat-error *ngIf="isControlHasError('fistName', 'minlength')">
+                    <strong>* longitud minima 3</strong>
+                  </mat-error>
+                  <mat-error *ngIf="isControlHasError('fistName', 'maxlength')">
+                    <strong>* longitud minima 25</strong>
+                  </mat-error>
+                </mat-form-field>
+              </td>
+              <td>
+                <mat-form-field class="example-full-width">
+                  <input matInput
+                         formControlName="secondName"
+                         placeholder="Segundo Nombre"
+                         value=""
+                         maxlength="11">
+                  <mat-hint align="start">Segundo Nombre de Empleado (Opcional).</mat-hint>
+                  <mat-error *ngIf="isControlHasError('secondName', 'required')">
+                    <strong>* requerido</strong>
+                  </mat-error>
+                  <mat-error *ngIf="isControlHasError('secondName', 'minlength')">
+                    <strong>* longitud minima 3</strong>
+                  </mat-error>
+                  <mat-error *ngIf="isControlHasError('secondName', 'maxlength')">
+                    <strong>* longitud minima 25</strong>
+                  </mat-error>
+                </mat-form-field>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <mat-form-field class="example-full-width">
+                  <input matInput
+                         formControlName="lastName"
+                         placeholder="Apellido Paterno"
+                         value=""
+                         maxlength="11">
+                  <mat-hint align="start">Apellido Paterno de Empelado.</mat-hint>
+                  <mat-error *ngIf="isControlHasError('lastName', 'required')">
+                    <strong>* requerido</strong>
+                  </mat-error>
+                  <mat-error *ngIf="isControlHasError('lastName', 'minlength')">
+                    <strong>* longitud minima 3</strong>
+                  </mat-error>
+                  <mat-error *ngIf="isControlHasError('lastName', 'maxlength')">
+                    <strong>* longitud minima 25</strong>
+                  </mat-error>
+                </mat-form-field>
+              </td>
+              <td>
+                <mat-form-field class="example-full-width">
+                  <input matInput
+                         formControlName="sureName"
+                         placeholder="Primer Nombre"
+                         value=""
+                         maxlength="11">
+                  <mat-hint align="start">Apellido Materno de Empelado.</mat-hint>
+                  <mat-error *ngIf="isControlHasError('sureName', 'required')">
+                    <strong>* requerido</strong>
+                  </mat-error>
+                  <mat-error *ngIf="isControlHasError('sureName', 'minlength')">
+                    <strong>* longitud minima 3</strong>
+                  </mat-error>
+                  <mat-error *ngIf="isControlHasError('sureName', 'maxlength')">
+                    <strong>* longitud minima 25</strong>
+                  </mat-error>
+                </mat-form-field>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <mat-form-field class="example-full-width">
+                  <input matInput
+                         formControlName="email"
+                         placeholder="Email"
+                         value=""
+                         maxlength="50">
+                  <mat-hint align="start">Correo electrónico de Empelado.</mat-hint>
+                  <mat-error *ngIf="isControlHasError('email', 'required')">
+                    <strong>* requerido</strong>
+                  </mat-error>
+                  <mat-error *ngIf="isControlHasError('email', 'minlength')">
+                    <strong>* longitud minima 3</strong>
+                  </mat-error>
+                  <mat-error *ngIf="isControlHasError('email', 'maxlength')">
+                    <strong>* longitud minima 25</strong>
+                  </mat-error>
+                  <mat-error *ngIf="isControlHasError('email', 'email')">
+                    <strong>* email no valido</strong>
+                  </mat-error>
+                </mat-form-field>
+              </td>
+              <td>
+                <mat-form-field class="example-full-width">
+                  <input type="tel"
+                         matInput
+                         formControlName="phone"
+                         placeholder=""
+                         value=""
+                         maxlength="18">
+                  <mat-hint align="start">Ejemplo. +52 1 55 2020 5008</mat-hint>
+                  <mat-error *ngIf="isControlHasError('phone', 'required')">
+                    <strong>* requerido</strong>
+                  </mat-error>
+                  <mat-error *ngIf="isControlHasError('phone', 'minlength')">
+                    <strong>* longitud minima 3</strong>
+                  </mat-error>
+                  <mat-error *ngIf="isControlHasError('phone', 'maxlength')">
+                    <strong>* longitud minima 25</strong>
+                  </mat-error>
+                </mat-form-field>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <mat-form-field class="example-full-width">
+                  <input matInput
+                         formControlName="userName"
+                         placeholder="Usuario"
+                         value=""
+                         maxlength="25">
+                  <mat-hint align="start">Usuario de Empelado.</mat-hint>
+                  <mat-error *ngIf="isControlHasError('userName', 'required')">
+                    <strong>* requerido</strong>
+                  </mat-error>
+                  <mat-error *ngIf="isControlHasError('userName', 'minlength')">
+                    <strong>* longitud minima 3</strong>
+                  </mat-error>
+                  <mat-error *ngIf="isControlHasError('userName', 'maxlength')">
+                    <strong>* longitud minima 25</strong>
+                  </mat-error>
+                </mat-form-field>
+              </td>
+              <td>
+                <mat-form-field class="example-full-width">
+                  <input type="tel"
+                         matInput
+                         formControlName="password"
+                         placeholder="Password"
+                         value=""
+                         maxlength="25">
+                  <mat-hint align="start">Password de Empelado.</mat-hint>
+                  <mat-error *ngIf="isControlHasError('password', 'required')">
+                    <strong>* requerido</strong>
+                  </mat-error>
+                  <mat-error *ngIf="isControlHasError('password', 'minlength')">
+                    <strong>* longitud minima 3</strong>
+                  </mat-error>
+                  <mat-error *ngIf="isControlHasError('password', 'maxlength')">
+                    <strong>* longitud minima 25</strong>
+                  </mat-error>
+                </mat-form-field>
+              </td>
+            </tr>
+          </table>
+          <br />
+          <div style="text-align:right">
+            <button type="reset"
+                    class="btn btn-default">
+              Limpiar
+            </button>&nbsp;
+            <button class="btn btn-danger"
+                    (click)="showModalDelete(modalDelete)">
+              Eliminar
+            </button>&nbsp;
+            <button class="btn btn-primary"
+                    (click)="saveEmployee(modalUpdate)">
+              Guardar
+            </button>
+          </div>
+        </form>
+      </kt-portlet-body>
+      <kt-portlet-footer>
+        <!--<p>Otras Acciones</p>
+        <ul align="left">
+          <li>
+            <a href="/configuration/companies/adminCompanies">Crea un Empresa</a>
+          </li>
+        </ul>-->
+      </kt-portlet-footer>
+    </kt-portlet>
+  </div>
+</div>
+
+<!--Modal Modifca-->
+<div class="kt-section">
+  <span *ngIf="closeResult" class="kt-section__sub">
+    <pre>{{closeResult}}</pre>
+  </span>
+  <div class="kt-section__content">
+    <ng-template #modalUpdate let-c="close" let-d="dismiss">
+      <div class="modal-header">
+        <h4 class="modal-title">Modifca</h4>
+        <button type="button" class="close" aria-label="Close" (click)="d('Cross click')">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>
+          ¿Estas seguro de modificar el Empleado?
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button"
+                class="btn btn-secondary"
+                (click)="c('Close click')">
+          No
+        </button>
+        <button type="button"
+                class="btn btn-primary"
+                (click)="updateGroup()">
+          Si
+        </button>
+      </div>
+    </ng-template>
+  </div>
+</div>
+
+<!--Model Elimina-->
+<div class="kt-section">
+  <span *ngIf="closeResult" class="kt-section__sub">
+    <pre>{{closeResult}}</pre>
+  </span>
+  <div class="kt-section__content">
+    <ng-template #modalDelete let-c="close" let-d="dismiss">
+      <div class="modal-header">
+        <h4 class="modal-title">Elimina</h4>
+        <button type="button" class="close" aria-label="Close" (click)="d('Cross click')">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>
+          ¿Estas seguro de eliminar el Empleado?
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button"
+                class="btn btn-secondary"
+                (click)="c('Close click')">
+          No
+        </button>
+        <button type="button"
+                class="btn btn-primary"
+                (click)="deleteGroup()">
+          Si
+        </button>
+      </div>
+    </ng-template>
+  </div>
+</div>

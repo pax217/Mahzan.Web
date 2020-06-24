@@ -1,0 +1,220 @@
+<!--<kt-notice [svg]="'assets/media/svg/icons/Tools/Compass.svg'">
+  For more info please check the components's official demos & documentation
+  <a class="font-weight-bold" href="https://material.angular.io/components/input/overview" target="_blank">demos & documentation</a>
+</kt-notice>-->
+
+<div class="row">
+  <div class="col-xl-6">
+
+    <kt-portlet>
+      <kt-portlet-header [title]="'Busca Grupos'">
+      </kt-portlet-header>
+      <kt-portlet-body class="form">
+        <form class="example-form"
+              [formGroup]="searchGroupsForm">
+          <table class="example-full-width" cellspacing="0">
+            <tr>
+              <td>
+                <mat-form-field class="example-full-width">
+                  <input matInput
+                         formControlName="name"
+                         placeholder="Nombre del Grupo"
+                         value="">
+                  <mat-hint align="start">Escribe el nombre de un grupo que quieras buscar</mat-hint>
+                </mat-form-field>
+              </td>
+              <td>
+                &nbsp;
+              </td>
+            </tr>
+          </table>
+        </form>
+      </kt-portlet-body>
+      <kt-portlet-footer style="text-align:right">
+        <button class="btn btn-primary"
+                (click)="searchGroups()"> Buscar</button>
+      </kt-portlet-footer>
+    </kt-portlet>
+
+    <br />
+
+    <kt-portlet>
+      <kt-portlet-header [title]="'Grupos'">
+      </kt-portlet-header>
+      <kt-portlet-body class="form">
+        <mat-table table
+                   [dataSource]="dataGruposSource"
+                   matSort>
+          <!-- groupsId Column -->
+          <ng-container matColumnDef="groupsId">
+            <mat-header-cell *matHeaderCellDef> Id. </mat-header-cell>
+            <mat-cell *matCellDef="let element"> {{element.groupsId}} </mat-cell>
+          </ng-container>
+          <!-- name Column -->
+          <ng-container matColumnDef="name">
+            <mat-header-cell *matHeaderCellDef
+                             mat-sort-header> Nombre. </mat-header-cell>
+            <mat-cell *matCellDef="let element"> {{element.name}} </mat-cell>
+          </ng-container>
+          <mat-header-row *matHeaderRowDef="displayedGruposColumns"></mat-header-row>
+          <mat-row *matRowDef="let row; columns: displayedGruposColumns;"
+                   [ngClass]="{'highlight': selectedGrupoRowIndex == row.groupsId}"
+                   (click)="highlight(row)"
+                   (dblclick)="getGroupById(row.groupsId)">
+          </mat-row>
+        </mat-table>
+        <mat-paginator #paginator
+                       [pageSizeOptions]="[5, 10]"
+                       showFirstLastButtons>
+        </mat-paginator>
+      </kt-portlet-body>
+      <!--<kt-portlet-footer style="text-align:right">
+        <button class="btn btn-primary"> Buscar</button>
+      </kt-portlet-footer>-->
+    </kt-portlet>
+
+  </div>
+
+  <div class="col-xl-6">
+    <kt-portlet>
+      <kt-portlet-header [title]="'Administra Grupo'">
+      </kt-portlet-header>
+      <kt-portlet-body class="form">
+        <form class="example-container"
+              [formGroup]="adminGroupForm">
+
+          <table class="example-full-width" cellspacing="0">
+            <tr>
+              <td>
+                &nbsp;
+              </td>
+              <td>
+                <mat-form-field class="example-full-width">
+                  <input matInput
+                         formControlName="groupsId"
+                         placeholder="Identificador de Grupo"
+                         value="">
+                </mat-form-field>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <mat-form-field class="example-full-width">
+                  <input matInput
+                         formControlName="name"
+                         placeholder="Nombre de Grupo"
+                         value=""
+                         maxlength="26">
+                  <mat-hint align="start">Indica un agrupador de Empresas</mat-hint>
+                  <mat-error *ngIf="isControlHasError('name', 'required')">
+                    <strong>* requerido</strong>
+                  </mat-error>
+                  <mat-error *ngIf="isControlHasError('name', 'minlength')">
+                    <strong>* longitud minima 3</strong>
+                  </mat-error>
+                  <mat-error *ngIf="isControlHasError('name', 'maxlength')">
+                    <strong>* longitud minima 25</strong>
+                  </mat-error>
+                </mat-form-field>
+              </td>
+              <td>
+                &nbsp;
+              </td>
+            </tr>
+          </table>
+          <br />
+          <div style="text-align:right">
+            <button type="reset"
+                    class="btn btn-default">
+              Limpiar
+            </button>&nbsp;
+            <button class="btn btn-danger"
+                    (click)="showModalDelete(modalDelete)">
+              Eliminar
+            </button>&nbsp;
+            <button class="btn btn-primary"
+                    (click)="saveGroups(modalUpdate)">
+              Guardar
+            </button>
+          </div>
+        </form>
+      </kt-portlet-body>
+      <kt-portlet-footer>
+        <p>Otras Acciones</p>
+        <ul align="left">
+          <li>
+            <a href="/configuration/companies/adminCompanies">Crea un Empresa</a>
+          </li>
+        </ul>
+      </kt-portlet-footer>
+    </kt-portlet>
+  </div>
+</div>
+
+<!--Modal Modifca-->
+<div class="kt-section">
+  <span *ngIf="closeResult" class="kt-section__sub">
+    <pre>{{closeResult}}</pre>
+  </span>
+  <div class="kt-section__content">
+    <ng-template #modalUpdate let-c="close" let-d="dismiss">
+      <div class="modal-header">
+        <h4 class="modal-title">Modifca</h4>
+        <button type="button" class="close" aria-label="Close" (click)="d('Cross click')">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>
+          ¿Estas seguro de modificar el Grupo?
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button"
+                class="btn btn-secondary"
+                (click)="c('Close click')">
+          No
+        </button>
+        <button type="button"
+                class="btn btn-primary"
+                (click)="updateGroup()">
+          Si
+        </button>
+      </div>
+    </ng-template>
+  </div>
+</div>
+
+<!--Model Elimina-->
+<div class="kt-section">
+  <span *ngIf="closeResult" class="kt-section__sub">
+    <pre>{{closeResult}}</pre>
+  </span>
+  <div class="kt-section__content">
+    <ng-template #modalDelete let-c="close" let-d="dismiss">
+      <div class="modal-header">
+        <h4 class="modal-title">Elimina</h4>
+        <button type="button" class="close" aria-label="Close" (click)="d('Cross click')">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>
+          ¿Estas seguro de eliminar el Grupo?
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button"
+                class="btn btn-secondary"
+                (click)="c('Close click')">
+          No
+        </button>
+        <button type="button"
+                class="btn btn-primary"
+                (click)="deleteGroup()">
+          Si
+        </button>
+      </div>
+    </ng-template>
+  </div>
+</div>

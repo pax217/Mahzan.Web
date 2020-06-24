@@ -1,0 +1,16 @@
+.mat-cell {
+  font-size: 12px;
+}
+
+.highlight {
+  background: #E5E8E8;
+}
+
+/* Tabla Empresas*/
+.mat-column-id {
+  flex: 0 0 50%;
+}
+
+.mat-column-name {
+  flex: 0 0 50%;
+}
